@@ -14,7 +14,8 @@ services:
     ports:
       # Nginx Proxy Manager fait le HTTPS et proxifie vers ce port.
       # 127.0.0.1 suffit si NPM est installé sur l'hôte ; sinon voir le README.
-      - "127.0.0.1:3000:3000"
+      # Port hôte choisi arbitrairement pour éviter les collisions (3000 est souvent pris).
+      - "127.0.0.1:3417:3000"
     volumes:
       - app_cache:/app/.cache
     healthcheck:
