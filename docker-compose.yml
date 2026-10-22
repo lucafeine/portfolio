@@ -14,7 +14,7 @@ services:
     # Aucun port publié : l'app n'est joignable que depuis le réseau Docker partagé
     # avec Nginx Proxy Manager, via le nom de service "lucafeine-web" et le port 4783.
     networks:
-      - npm
+      - proxy
     volumes:
       - app_cache:/app/.cache
     healthcheck:
@@ -30,10 +30,9 @@ services:
         max-file: "3"
 
 networks:
-  npm:
+  proxy:
     external: true
-    # Nom réel du réseau de NPM : docker inspect npm --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}'
-    name: ${NPM_NETWORK:-npm_default}
+    name: ${NPM_NETWORK:-proxy}
 
 volumes:
   app_cache:

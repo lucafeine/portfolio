@@ -81,13 +81,14 @@ Le conteneur `lucafeine-web` ne publie **aucun port sur l'hôte** : il rejoint l
 Nginx Proxy Manager et n'est joignable qu'à travers lui, sous le nom de service `lucafeine-web`
 et le port interne `4783`. C'est le proxy en amont qui publie 80/443 et termine le TLS.
 
-Docker Compose lit le nom du réseau dans `NPM_NETWORK` (défaut : `npm_default`). Pour le connaître :
+Docker Compose lit le nom du réseau dans `NPM_NETWORK`, avec `proxy` par défaut. Pour vérifier
+qu'il existe bien sur le VPS :
 
 ```bash
-docker inspect npm --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}'
+docker network ls | grep proxy
 ```
 
-Puis, si nécessaire, dans `.env` :
+Si NPM utilise un autre nom, renseignez-le dans `.env` :
 
 ```
 NPM_NETWORK=le_nom_reel_du_reseau
