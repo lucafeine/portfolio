@@ -15,10 +15,10 @@ export function Journal({ state }: JournalProps) {
     <section id="journal" className="section section--journal" aria-labelledby="journal-title">
       <div className="section__head">
         <h2 id="journal-title">Journal</h2>
-        <p>
+        {/*<p>
           Les six derniers commits, dans l’ordre où ils sont arrivés. Le graphique reprend les
           contributions des douze derniers mois.
-        </p>
+        </p>*/}
       </div>
 
       <ContributionGraph state={state} />

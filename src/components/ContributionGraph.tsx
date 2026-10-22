@@ -65,9 +65,9 @@ export function ContributionGraph({ state }: ContributionGraphProps) {
             {approximate ? " d’après les commits publics" : " sur les douze derniers mois"}
           </span>
         </p>
-        <p className="contrib__period">
+        {/*<p className="contrib__period">
           {formatDate(from)} — {formatDate(to)}
-        </p>
+        </p>*/}
       </div>
 
       <div
@@ -99,7 +99,7 @@ export function ContributionGraph({ state }: ContributionGraphProps) {
         </div>
       </div>
 
-      <figcaption className="contrib__legend">
+      {/*<figcaption className="contrib__legend">
         <span>Moins</span>
         <span className="contrib__day contrib__day--level-0" aria-hidden="true" />
         <span className="contrib__day contrib__day--level-1" aria-hidden="true" />
@@ -108,7 +108,7 @@ export function ContributionGraph({ state }: ContributionGraphProps) {
         <span className="contrib__day contrib__day--level-4" aria-hidden="true" />
         <span>Plus</span>
         <span className="contrib__hint">Chaque carré représente un jour.</span>
-      </figcaption>
+      </figcaption>*/}
     </figure>
   );
 }
