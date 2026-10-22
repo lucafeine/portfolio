@@ -10,7 +10,7 @@ RUN npm run build
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
-    PORT=3000
+    PORT=4783
 
 RUN addgroup -S app && adduser -S app -G app
 
@@ -23,9 +23,9 @@ COPY server ./server
 RUN mkdir -p /app/.cache && chown app:app /app/.cache
 
 USER app
-EXPOSE 3000
+EXPOSE 4783
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:3000/api/health || exit 1
+  CMD wget -qO- http://127.0.0.1:4783/api/health || exit 1
 
 CMD ["node", "server/index.mjs"]

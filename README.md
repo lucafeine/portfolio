@@ -74,12 +74,12 @@ qui possède déjà les ports **80** et **443**. Les enregistrements DNS de `luc
 cp .env.example .env
 # éditez .env : GITHUB_TOKEN=...
 docker compose up -d --build
-docker compose logs -f app
+docker compose logs -f lucafeine-web
 ```
 
-Le conteneur `app` ne publie **aucun port sur l'hôte** : il rejoint le réseau Docker de Nginx Proxy
-Manager et n'est joignable qu'à travers lui, sous le nom de service `app` et le port interne `3000`.
-C'est le proxy en amont qui publie 80/443 et termine le TLS.
+Le conteneur `lucafeine-web` ne publie **aucun port sur l'hôte** : il rejoint le réseau Docker de
+Nginx Proxy Manager et n'est joignable qu'à travers lui, sous le nom de service `lucafeine-web`
+et le port interne `4783`. C'est le proxy en amont qui publie 80/443 et termine le TLS.
 
 Docker Compose lit le nom du réseau dans `NPM_NETWORK` (défaut : `npm_default`). Pour le connaître :
 
@@ -95,7 +95,8 @@ NPM_NETWORK=le_nom_reel_du_reseau
 
 Dans Nginx Proxy Manager :
 
-1. *Proxy Hosts* → **Add Proxy Host** pour `lucafeine.fr`, scheme `http`, host `app`, port `3000`.
+1. *Proxy Hosts* → **Add Proxy Host** pour `lucafeine.fr`, scheme `http`, host
+   `lucafeine-web`, port `4783`.
 2. Onglet *SSL* : certificat Let’s Encrypt, **Force SSL** et **HSTS** activés.
 3. Ajouter un second host pour `www.lucafeine.fr`, avec *Force SSL*, puis une redirection
    permanente vers `https://lucafeine.fr`.
@@ -103,7 +104,7 @@ Dans Nginx Proxy Manager :
 Test avant de valider l'host :
 
 ```bash
-docker exec npm curl -sI http://app:3000/api/health
+docker exec npm curl -sI http://lucafeine-web:4783/api/health
 ```
 
 Les en-têtes `nosniff`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy` et la CSP sont
@@ -125,7 +126,7 @@ Arrêt : `docker compose down`. Le volume `app_cache` conserve le dernier état 
 | `GITHUB_USER` | `lucafeine` | Compte GitHub lu par l’API |
 | `GITHUB_TOKEN` | vide | Token en lecture seule, recommandé en production |
 | `CACHE_TTL_MS` | `600000` avec token, `900000` sans | Durée du cache serveur |
-| `PORT` | `8787` en local, `3000` dans Docker | Port HTTP interne |
+| `PORT` | `8787` en local, `4783` dans Docker | Port HTTP interne |
 
 ## Accessibilité
 

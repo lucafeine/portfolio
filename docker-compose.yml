@@ -1,24 +1,24 @@
 name: portfolio-lucafeine
 
 services:
-  app:
+  lucafeine-web:
     build:
       context: .
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 4783
       GITHUB_USER: ${GITHUB_USER:-lucafeine}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       CACHE_TTL_MS: ${CACHE_TTL_MS:-600000}
     # Aucun port publié : l'app n'est joignable que depuis le réseau Docker partagé
-    # avec Nginx Proxy Manager, via le nom de service "app" et le port interne 3000.
+    # avec Nginx Proxy Manager, via le nom de service "lucafeine-web" et le port 4783.
     networks:
       - npm
     volumes:
       - app_cache:/app/.cache
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4783/api/health"]
       interval: 30s
       timeout: 5s
       start_period: 15s
