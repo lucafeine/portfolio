@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="lucafeine — développeur web en France">
+  <rect width="1200" height="630" fill="#f7efe3"/>
+  <circle cx="1010" cy="318" r="132" fill="none" stroke="#cbc3b8" stroke-width="2"/>
+  <circle cx="1010" cy="318" r="117" fill="none" stroke="#e1dace" stroke-width="2"/>
+  <g transform="rotate(28 1010 318)">
+    <ellipse cx="1010" cy="318" rx="46" ry="70" fill="#994920"/>
+    <path d="M1010 258c-18 22-18 98 0 120" fill="none" stroke="#f7efe3" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <line x1="88" y1="88" x2="1112" y2="88" stroke="#cbc3b8" stroke-width="2"/>
+  <line x1="88" y1="96" x2="1112" y2="96" stroke="#e1dace" stroke-width="2"/>
+  <text x="88" y="300" font-family="Georgia, serif" font-size="148" fill="#251a13" letter-spacing="-6">lucafeine<tspan fill="#994920">.</tspan></text>
+  <text x="92" y="390" font-family="Georgia, serif" font-size="44" fill="#4b4038">Développeur et bidouilleur</text>
+  <line x1="88" y1="468" x2="700" y2="468" stroke="#cbc3b8" stroke-width="2"/>
+  <text x="88" y="536" font-family="Georgia, serif" font-size="30" fill="#655c55">lucafeine.fr</text>
+  <text x="1112" y="536" text-anchor="end" font-family="Georgia, serif" font-size="30" fill="#655c55">github.com/lucafeine</text>
+</svg>

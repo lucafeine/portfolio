@@ -1,0 +1,96 @@
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * macrostructure: Long Document · S4 inline heads · prose 62ch · contribution graph + 6-commit ledger
+ * theme: custom · vibe: "café de quartier, papier, bois clair" · paper: oklch(95.5% 0.018 78) · accent: oklch(50% 0.12 45)
+ * display: Fraunces · body: Newsreader · meta: Geist Mono · axes: light / roman-serif / chromatic-terracotta
+ * studied: no · context: mixed (copy user-provided) · nav: N6 Masthead · footer: Ft6 Letter close · enrichment: none
+ * contrast: pass (40–41) · chrome: pass (42–43, 47) · honest: pass (46) · tokens: pass (48) · responsive: pass (49, 50–57)
+ */
+
+:root {
+  /* Colour — tinted toward the warm paper hue (78), accent at coffee-roast 45 */
+  --color-paper: oklch(95.5% 0.018 78);
+  --color-paper-2: oklch(92.5% 0.02 78);
+  --color-paper-3: oklch(89% 0.018 78);
+  --color-ink: oklch(23% 0.022 55);
+  --color-ink-2: oklch(38% 0.02 55);
+  --color-muted: oklch(48% 0.016 60);
+  --color-rule: oklch(82% 0.018 75);
+  --color-rule-2: oklch(86% 0.014 75);
+  --color-accent: oklch(50% 0.12 45);
+  --color-accent-strong: oklch(42% 0.13 45);
+  --color-focus: oklch(48% 0.17 45);
+  --color-accent-ink: oklch(95.5% 0.018 78);
+  --color-selection: oklch(84% 0.06 62);
+  --color-contrib-0: oklch(90% 0.016 78);
+  --color-contrib-1: oklch(84% 0.045 66);
+  --color-contrib-2: oklch(74% 0.08 58);
+  --color-contrib-3: oklch(62% 0.105 50);
+  --color-contrib-4: oklch(48% 0.12 45);
+
+  /* Type */
+  --font-display: "Fraunces Variable", "Fraunces", ui-serif, Georgia, serif;
+  --font-body: "Newsreader Variable", "Newsreader", ui-serif, Georgia, serif;
+  --font-meta: "Geist Mono Variable", "Geist Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1.0625rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5625rem;
+  --text-xl: 1.9531rem;
+  --text-2xl: 2.4414rem;
+  --text-3xl: 3.0518rem;
+  --text-4xl: 3.8147rem;
+  --text-display: clamp(2.5rem, 1.5rem + 4vw, 4.75rem);
+  --text-display-s: clamp(2rem, 1.25rem + 3vw, 3.5rem);
+
+  --leading-tight: 1.08;
+  --leading-snug: 1.25;
+  --leading-body: 1.7;
+  --tracking-display: -0.025em;
+  --tracking-label: 0.08em;
+
+  /* Space — 4 pt scale */
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 9rem;
+
+  /* Layout */
+  --page-max: 72rem;
+  --measure: 62ch;
+  --page-gutter: clamp(1rem, 4vw, 2.5rem);
+  --section-space: clamp(3.5rem, 7vw, 6rem);
+
+  /* Shape */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-round: 999px;
+  --rule-hair: 1px;
+  --rule-strong: 2px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+
+  /* Layers */
+  --z-base: 1;
+  --z-raised: 10;
+  --z-sticky: 200;
+  --z-toast: 500;
+
+  /* Portrait */
+  --portrait-size: clamp(8.5rem, 22vw, 12.5rem);
+  --contrib-cell: 0.6875rem;
+  --contrib-gap: 0.1875rem;
+}
