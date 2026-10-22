@@ -1,0 +1,22 @@
+# Dépendances
+node_modules/
+
+# Build
+dist/
+.vite/
+*.tsbuildinfo
+
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+
+# Logs et fichiers système
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Éditeurs
+.vscode/
+.idea/
