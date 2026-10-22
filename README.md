@@ -8,7 +8,7 @@ d’une mise en page éditoriale.
 
 - **React 19 + TypeScript + Vite** pour l’interface.
 - **Express 5** pour servir le build et exposer `GET /api/github`.
-- **Caddy** pour HTTPS automatique et redirection `www`.
+- **Nginx Proxy Manager** (déjà présent sur le VPS) pour HTTPS et redirection `www`.
 - **Docker Compose** pour le déploiement sur VPS.
 - Polices auto-hébergées : **Fraunces**, **Newsreader**, **Geist Mono** (Fontsource).
 - Aucun cookie, aucun traceur, aucun script tiers.
@@ -66,18 +66,33 @@ pied de page. Modifiez ce fichier pour mettre à jour le contenu sans toucher au
 
 ## Déploiement sur le VPS
 
-Prérequis : Docker et le plugin Compose, les ports **80** et **443** ouverts, et les enregistrements
-DNS de `lucafeine.fr` et `www.lucafeine.fr` pointant vers le VPS.
+Prérequis : Docker et le plugin Compose, et un proxy HTTPS en amont (ici Nginx Proxy Manager)
+qui possède déjà les ports **80** et **443**. Les enregistrements DNS de `lucafeine.fr` et
+`www.lucafeine.fr` doivent pointer vers le VPS.
 
 ```bash
 cp .env.example .env
 # éditez .env : GITHUB_TOKEN=...
 docker compose up -d --build
-docker compose logs -f caddy
+docker compose logs -f app
 ```
 
-Caddy obtient et renouvelle les certificats Let’s Encrypt automatiquement. Le conteneur `app` n’est
-pas exposé publiquement : seul Caddy publie 80/443.
+Le conteneur `app` écoute sur `127.0.0.1:3000` uniquement : c'est le proxy en amont qui publie
+80/443 et termine le TLS. Dans Nginx Proxy Manager :
+
+1. *Proxy Hosts* → **Add Proxy Host** pour `lucafeine.fr`, scheme `http`, host
+   `127.0.0.1` (ou `host.docker.internal` si NPM tourne en conteneur), port `3000`.
+2. Onglet *SSL* : certificat Let’s Encrypt, **Force SSL** et **HSTS** activés.
+3. Ajouter un second host pour `www.lucafeine.fr`, avec *Force SSL*, puis une redirection
+   permanente vers `https://lucafeine.fr`.
+
+Si NPM tourne dans un conteneur Docker, `127.0.0.1` désigne le conteneur NPM lui-même. Deux
+solutions : ajouter `extra_hosts: ["host.docker.internal:host-gateway"]` au service NPM et viser
+`host.docker.internal:3000`, ou faire tourner `app` sur un réseau Docker partagé et viser
+`app:3000` (dans ce cas, supprimer la section `ports` du `docker-compose.yml`).
+
+Les en-têtes `nosniff`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy` et la CSP sont
+déjà posés par Express ; seul HSTS dépend du proxy.
 
 Mise à jour :
 
@@ -86,7 +101,7 @@ git pull
 docker compose up -d --build
 ```
 
-Arrêt : `docker compose down`. Les volumes `caddy_data` et `caddy_config` conservent les certificats.
+Arrêt : `docker compose down`. Le volume `app_cache` conserve le dernier état GitHub.
 
 ### Variables d’environnement
 
@@ -119,9 +134,10 @@ Mesures en place :
 - Polices auto-hébergées avec `font-display: swap`, sous-ensembles latins chargés à la demande.
 - Avatar GitHub en `srcset` 240/480, `width`/`height`, `fetchpriority="high"`.
 - Assets hashés servis avec `Cache-Control: immutable`, HTML en `no-cache`.
-- Compression gzip/zstd via Caddy, gzip via Express en local.
+- Compression gzip via Express ; le proxy en amont peut ajouter brotli ou zstd.
 - API mise en cache côté serveur et navigateur (`stale-while-revalidate`).
-- En-têtes de sécurité : CSP, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS.
+- En-têtes de sécurité : CSP, `nosniff`, `Referrer-Policy`, `Permissions-Policy` via Express ;
+  HSTS via le proxy.
 
 ## Structure
 
@@ -134,9 +150,8 @@ src/
   styles/app.css   mise en page et composants
 server/index.mjs   API GitHub + serveur statique
 tokens.css         palette, typographie, espacements, mouvement
-Caddyfile          domaine, HTTPS, en-têtes
 Dockerfile         build multi-étapes, utilisateur non-root
-docker-compose.yml app + Caddy
+docker-compose.yml app + volume de cache
 ```
 
 ## Git
