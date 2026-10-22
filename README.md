@@ -77,20 +77,34 @@ docker compose up -d --build
 docker compose logs -f app
 ```
 
-Le conteneur `app` écoute sur `127.0.0.1:3417` uniquement (port hôte choisi arbitrairement
-pour éviter les collisions ; l'application écoute toujours sur 3000 à l'intérieur du conteneur).
-C'est le proxy en amont qui publie 80/443 et termine le TLS. Dans Nginx Proxy Manager :
+Le conteneur `app` ne publie **aucun port sur l'hôte** : il rejoint le réseau Docker de Nginx Proxy
+Manager et n'est joignable qu'à travers lui, sous le nom de service `app` et le port interne `3000`.
+C'est le proxy en amont qui publie 80/443 et termine le TLS.
 
-1. *Proxy Hosts* → **Add Proxy Host** pour `lucafeine.fr`, scheme `http`, host
-   `127.0.0.1` (ou `host.docker.internal` si NPM tourne en conteneur), port `3417`.
+Docker Compose lit le nom du réseau dans `NPM_NETWORK` (défaut : `npm_default`). Pour le connaître :
+
+```bash
+docker inspect npm --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}'
+```
+
+Puis, si nécessaire, dans `.env` :
+
+```
+NPM_NETWORK=le_nom_reel_du_reseau
+```
+
+Dans Nginx Proxy Manager :
+
+1. *Proxy Hosts* → **Add Proxy Host** pour `lucafeine.fr`, scheme `http`, host `app`, port `3000`.
 2. Onglet *SSL* : certificat Let’s Encrypt, **Force SSL** et **HSTS** activés.
 3. Ajouter un second host pour `www.lucafeine.fr`, avec *Force SSL*, puis une redirection
    permanente vers `https://lucafeine.fr`.
 
-Si NPM tourne dans un conteneur Docker, `127.0.0.1` désigne le conteneur NPM lui-même. Deux
-solutions : ajouter `extra_hosts: ["host.docker.internal:host-gateway"]` au service NPM et viser
-`host.docker.internal:3417`, ou faire tourner `app` sur un réseau Docker partagé et viser
-`app:3000` (dans ce cas, supprimer la section `ports` du `docker-compose.yml`).
+Test avant de valider l'host :
+
+```bash
+docker exec npm curl -sI http://app:3000/api/health
+```
 
 Les en-têtes `nosniff`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy` et la CSP sont
 déjà posés par Express ; seul HSTS dépend du proxy.
