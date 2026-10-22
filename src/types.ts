@@ -21,13 +21,20 @@ export type GithubRepo = {
   stars: number;
 };
 
-export type GithubCommit = {
-  sha: string;
-  shortSha: string;
-  message: string;
+export type JournalEntryKind = "commit" | "pullRequest" | "issue";
+
+export type JournalEntry = {
+  id: string;
+  kind: JournalEntryKind;
+  title: string;
   date: string;
   repo: string;
+  repoFullName: string;
   url: string;
+  sha?: string;
+  shortSha?: string;
+  number?: number | null;
+  state?: "open" | "closed" | "merged";
 };
 
 export type ContributionDay = {
@@ -49,7 +56,7 @@ export type GithubContributions = {
 export type GithubPayload = {
   profile: GithubProfile;
   repos: GithubRepo[];
-  commits: GithubCommit[];
+  journal: JournalEntry[];
   contributions: GithubContributions | null;
   updatedAt: string;
   stale: boolean;

@@ -10,7 +10,7 @@ function isPayload(value: unknown): value is GithubPayload {
     typeof candidate.profile === "object" &&
     candidate.profile !== null &&
     Array.isArray(candidate.repos) &&
-    Array.isArray(candidate.commits) &&
+    Array.isArray(candidate.journal) &&
     typeof candidate.updatedAt === "string"
   );
 }

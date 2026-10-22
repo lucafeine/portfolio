@@ -1,7 +1,8 @@
 # lucafeine.fr
 
 Site personnel one-page : bio, photo de profil GitHub, dépôts classés par dernière contribution,
-derniers commits et liens de contact. Le style part d’une palette de café, d’un papier crème et
+journal des contributions (commits, pull requests, issues) et liens de contact. Le style part d'une
+palette de café, d'un papier crème et
 d’une mise en page éditoriale.
 
 ## Stack
@@ -40,13 +41,15 @@ token), puis le front se rafraîchit toutes les 10 minutes quand l’onglet est 
 Dans Docker, ce fichier vit dans le volume `app_cache`.
 
 - Les **dépôts** sont triés par dernière contribution de `lucafeine` (repli sur `pushed_at`).
-- Les **commits** viennent des dépôts publics, filtrés par auteur, puis fusionnés et triés par date.
-  Les six plus récents sont affichés.
+- Le **journal** rassemble les commits (dans ses dépôts comme dans ceux d’organisations auxquelles
+  il contribue), les pull requests et les issues qu’il a ouvertes. Quatre entrées sont affichées,
+  puis dix de plus à chaque clic sur « Charger plus ».
 - Le **graphique de contributions** reprend le calendrier public GitHub des douze derniers mois.
   Si la page `github.com/users/<login>/contributions` change ou est indisponible, le serveur
   reconstruit une approximation à partir des commits publics.
-- Si l’API REST est rate-limitée, le serveur bascule sur l’API de recherche GitHub (dépôts et
-  commits) et conserve le dernier état en cache disque. L’interface reste donc alimentée.
+- Si l’API REST est rate-limitée, le serveur bascule sur l’API de recherche GitHub (dépôts,
+  commits, pull requests et issues) et conserve le dernier état en cache disque. L’interface
+  reste donc alimentée.
 - L’**avatar** est chargé depuis `https://github.com/lucafeine.png?size=480` : GitHub renvoie
   toujours la photo actuelle, sans copie locale.
 - Sans token, GitHub limite à 60 requêtes/heure par IP. Le serveur réduit alors le nombre de
