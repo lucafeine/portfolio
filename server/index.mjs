@@ -187,68 +187,43 @@ async function loadContributionCalendar() {
   }
 }
 
-async function loadGithubData() {
-  const [profile, repos] = await Promise.all([
-    githubFetch(`/users/${githubUser}`),
-    githubFetch(`/users/${githubUser}/repos?per_page=100&sort=pushed`),
-  ]);
+function normalizeCommit(commit, repoName, fallbackUrl) {
+  return {
+    sha: commit.sha,
+    shortSha: String(commit.sha).slice(0, 7),
+    message: firstLine(commit.commit?.message),
+    date: commit.commit?.author?.date ?? commit.commit?.committer?.date ?? null,
+    repo: repoName,
+    url: commit.html_url ?? fallbackUrl,
+  };
+}
 
-  const repositories = Array.isArray(repos) ? repos : [];
-  const commitSources = [...repositories]
-    .sort((a, b) => Date.parse(b.pushed_at ?? 0) - Date.parse(a.pushed_at ?? 0))
-    .slice(0, githubToken ? 15 : 6);
-
-  const [commitResults, contributions] = await Promise.all([
-    Promise.allSettled(
-      commitSources.map((repo) =>
-        githubFetch(
-          `/repos/${githubUser}/${encodeURIComponent(repo.name)}/commits?author=${encodeURIComponent(
-            githubUser,
-          )}&per_page=20`,
-        ),
-      ),
-    ),
-    loadContributionCalendar(),
-  ]);
-
-  const allCommits = [];
-  const latestByRepo = new Map();
-
-  commitResults.forEach((result, index) => {
-    const repo = commitSources[index];
-    if (result.status === "rejected") {
-      console.warn(`[github] commits indisponibles pour ${repo.name}: ${result.reason.message}`);
-      return;
-    }
-
-    const commits = Array.isArray(result.value) ? result.value : [];
-    if (commits.length > 0) {
-      const latest = commits[0]?.commit?.author?.date ?? commits[0]?.commit?.committer?.date ?? null;
-      if (latest) latestByRepo.set(repo.name, latest);
-    }
-
-    for (const commit of commits) {
-      allCommits.push({
-        sha: commit.sha,
-        shortSha: String(commit.sha).slice(0, 7),
-        message: firstLine(commit.commit?.message),
-        date: commit.commit?.author?.date ?? commit.commit?.committer?.date ?? null,
-        repo: repo.name,
-        url: commit.html_url ?? `${repo.html_url}/commit/${commit.sha}`,
-      });
-    }
-  });
-
+function prepareCommits(allCommits) {
   const seen = new Set();
-  const commits = allCommits
+  return allCommits
     .filter((commit) => {
-      if (!commit.date || seen.has(commit.sha)) return false;
+      if (!commit.date || !commit.sha || seen.has(commit.sha)) return false;
       seen.add(commit.sha);
       return true;
     })
     .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
     .slice(0, 6);
+}
 
+function latestContributionByRepo(allCommits) {
+  const latestByRepo = new Map();
+  for (const commit of allCommits) {
+    if (!commit.date || !commit.repo) continue;
+    const current = latestByRepo.get(commit.repo);
+    if (!current || Date.parse(commit.date) > Date.parse(current)) {
+      latestByRepo.set(commit.repo, commit.date);
+    }
+  }
+  return latestByRepo;
+}
+
+function buildPayload(profile, repositories, allCommits, contributions) {
+  const latestByRepo = latestContributionByRepo(allCommits);
   const normalizedRepos = repositories.map((repo) => ({
     name: repo.name,
     description: repo.description ?? null,
@@ -269,21 +244,130 @@ async function loadGithubData() {
 
   return {
     profile: {
-      login: profile.login,
+      login: profile.login ?? githubUser,
       name: profile.name ?? null,
       bio: profile.bio ?? null,
-      avatarUrl: profile.avatar_url,
-      htmlUrl: profile.html_url,
+      avatarUrl: profile.avatar_url ?? `https://github.com/${githubUser}.png?size=480`,
+      htmlUrl: profile.html_url ?? `https://github.com/${githubUser}`,
       location: profile.location ?? null,
       publicRepos: profile.public_repos ?? normalizedRepos.length,
       followers: profile.followers ?? 0,
     },
     repos: normalizedRepos,
-    commits,
+    commits: prepareCommits(allCommits),
     contributions,
     updatedAt: new Date().toISOString(),
     stale: false,
   };
+}
+
+async function loadSearchCommits() {
+  const data = await githubFetch(
+    `/search/commits?q=${encodeURIComponent(
+      `author:${githubUser}`,
+    )}&sort=author-date&order=desc&per_page=30`,
+  );
+
+  return (data.items ?? []).map((item) => {
+    const fullName = item.repository?.full_name ?? "";
+    const repoName = fullName.startsWith(`${githubUser}/`)
+      ? fullName.slice(githubUser.length + 1)
+      : fullName || "dépôt inconnu";
+
+    return normalizeCommit(item, repoName, item.html_url);
+  });
+}
+
+async function loadSearchRepositories() {
+  const data = await githubFetch(
+    `/search/repositories?q=${encodeURIComponent(
+      `user:${githubUser} fork:true`,
+    )}&sort=updated&order=desc&per_page=100`,
+  );
+  return Array.isArray(data.items) ? data.items : [];
+}
+
+function searchProfile(repoCount) {
+  return {
+    login: githubUser,
+    name: null,
+    bio: null,
+    avatar_url: `https://github.com/${githubUser}.png?size=480`,
+    html_url: `https://github.com/${githubUser}`,
+    location: null,
+    public_repos: repoCount,
+    followers: 0,
+  };
+}
+
+async function loadGithubData() {
+  let profile;
+  let repositories;
+
+  try {
+    const [coreProfile, coreRepos] = await Promise.all([
+      githubFetch(`/users/${githubUser}`),
+      githubFetch(`/users/${githubUser}/repos?per_page=100&sort=pushed`),
+    ]);
+    profile = coreProfile;
+    repositories = Array.isArray(coreRepos) ? coreRepos : [];
+  } catch (error) {
+    console.warn(`[github] API principale indisponible (${error.message}), repli sur la recherche.`);
+    const [searchRepos, searchCommits, contributions] = await Promise.all([
+      loadSearchRepositories(),
+      loadSearchCommits().catch((searchError) => {
+        console.warn(`[github] commits de recherche indisponibles: ${searchError.message}`);
+        return [];
+      }),
+      loadContributionCalendar(),
+    ]);
+
+    return buildPayload(searchProfile(searchRepos.length), searchRepos, searchCommits, contributions);
+  }
+
+  const commitSources = [...repositories]
+    .sort((a, b) => Date.parse(b.pushed_at ?? 0) - Date.parse(a.pushed_at ?? 0))
+    .slice(0, githubToken ? 15 : 6);
+
+  const [commitResults, contributions] = await Promise.all([
+    Promise.allSettled(
+      commitSources.map((repo) =>
+        githubFetch(
+          `/repos/${githubUser}/${encodeURIComponent(repo.name)}/commits?author=${encodeURIComponent(
+            githubUser,
+          )}&per_page=20`,
+        ),
+      ),
+    ),
+    loadContributionCalendar(),
+  ]);
+
+  let allCommits = [];
+  let successfulFetches = 0;
+
+  commitResults.forEach((result, index) => {
+    const repo = commitSources[index];
+    if (result.status === "rejected") {
+      console.warn(`[github] commits indisponibles pour ${repo.name}: ${result.reason.message}`);
+      return;
+    }
+
+    successfulFetches += 1;
+    const commits = Array.isArray(result.value) ? result.value : [];
+    for (const commit of commits) {
+      allCommits.push(normalizeCommit(commit, repo.name, `${repo.html_url}/commit/${commit.sha}`));
+    }
+  });
+
+  if (successfulFetches === 0) {
+    console.warn("[github] aucun commit via l’API principale, repli sur la recherche.");
+    allCommits = await loadSearchCommits().catch((error) => {
+      console.warn(`[github] commits de recherche indisponibles: ${error.message}`);
+      return [];
+    });
+  }
+
+  return buildPayload(profile, repositories, allCommits, contributions);
 }
 
 let cache = { data: null, expiresAt: 0 };
@@ -296,7 +380,11 @@ async function readDiskCache() {
     if (!data || typeof data !== "object" || !data.profile || !Array.isArray(data.repos)) {
       throw new Error("format inattendu");
     }
-    cache = { data: { ...data, stale: true }, expiresAt: 0 };
+    const cachedAt = Date.parse(data.updatedAt ?? "");
+    cache = {
+      data: { ...data, stale: true },
+      expiresAt: Number.isFinite(cachedAt) ? cachedAt + cacheTtlMs : 0,
+    };
     console.log(`[cache] dernier état GitHub chargé depuis ${cacheFile}`);
   } catch (error) {
     if (error.code !== "ENOENT") {

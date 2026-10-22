@@ -45,6 +45,8 @@ Dans Docker, ce fichier vit dans le volume `app_cache`.
 - Le **graphique de contributions** reprend le calendrier public GitHub des douze derniers mois.
   Si la page `github.com/users/<login>/contributions` change ou est indisponible, le serveur
   reconstruit une approximation à partir des commits publics.
+- Si l’API REST est rate-limitée, le serveur bascule sur l’API de recherche GitHub (dépôts et
+  commits) et conserve le dernier état en cache disque. L’interface reste donc alimentée.
 - L’**avatar** est chargé depuis `https://github.com/lucafeine.png?size=480` : GitHub renvoie
   toujours la photo actuelle, sans copie locale.
 - Sans token, GitHub limite à 60 requêtes/heure par IP. Le serveur réduit alors le nombre de
