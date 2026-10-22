@@ -20,6 +20,8 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY server ./server
 
+RUN mkdir -p /app/.cache && chown app:app /app/.cache
+
 USER app
 EXPOSE 3000
 

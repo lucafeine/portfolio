@@ -2,6 +2,7 @@ import "dotenv/config";
 import compression from "compression";
 import express from "express";
 import { existsSync } from "node:fs";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,13 +11,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const port = Number.parseInt(process.env.PORT ?? "8787", 10);
 const githubUser = (process.env.GITHUB_USER ?? "lucafeine").trim();
 const githubToken = process.env.GITHUB_TOKEN?.trim();
-const cacheTtlMs = Number.parseInt(process.env.CACHE_TTL_MS ?? "600000", 10);
+const defaultCacheTtl = githubToken ? 600_000 : 900_000;
+const cacheTtlEnv = process.env.CACHE_TTL_MS?.trim();
+const cacheTtlMs = cacheTtlEnv ? Number.parseInt(cacheTtlEnv, 10) : defaultCacheTtl;
 const isProduction = process.env.NODE_ENV === "production";
 const distDir = path.resolve(__dirname, "..", "dist");
 const indexFile = path.join(distDir, "index.html");
+const cacheFile = process.env.CACHE_FILE ?? path.resolve(__dirname, "..", ".cache", "github.json");
 
 if (!/^[a-zA-Z0-9-]{1,39}$/.test(githubUser)) {
   throw new Error("GITHUB_USER doit être un identifiant GitHub valide.");
+}
+
+if (!Number.isFinite(cacheTtlMs) || cacheTtlMs < 60_000) {
+  throw new Error("CACHE_TTL_MS doit être un nombre de millisecondes supérieur à 60 000.");
 }
 
 const githubHeaders = {
@@ -188,7 +196,7 @@ async function loadGithubData() {
   const repositories = Array.isArray(repos) ? repos : [];
   const commitSources = [...repositories]
     .sort((a, b) => Date.parse(b.pushed_at ?? 0) - Date.parse(a.pushed_at ?? 0))
-    .slice(0, 15);
+    .slice(0, githubToken ? 15 : 6);
 
   const [commitResults, contributions] = await Promise.all([
     Promise.allSettled(
@@ -281,6 +289,31 @@ async function loadGithubData() {
 let cache = { data: null, expiresAt: 0 };
 let pending = null;
 
+async function readDiskCache() {
+  try {
+    const raw = await readFile(cacheFile, "utf8");
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object" || !data.profile || !Array.isArray(data.repos)) {
+      throw new Error("format inattendu");
+    }
+    cache = { data: { ...data, stale: true }, expiresAt: 0 };
+    console.log(`[cache] dernier état GitHub chargé depuis ${cacheFile}`);
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      console.warn(`[cache] illisible (${error.message})`);
+    }
+  }
+}
+
+async function writeDiskCache(data) {
+  try {
+    await mkdir(path.dirname(cacheFile), { recursive: true });
+    await writeFile(cacheFile, JSON.stringify(data), "utf8");
+  } catch (error) {
+    console.warn(`[cache] écriture impossible (${error.message})`);
+  }
+}
+
 async function getGithubData() {
   const now = Date.now();
 
@@ -293,6 +326,7 @@ async function getGithubData() {
   pending = loadGithubData()
     .then((data) => {
       cache = { data, expiresAt: Date.now() + cacheTtlMs };
+      void writeDiskCache(data);
       return data;
     })
     .catch((error) => {
@@ -308,6 +342,8 @@ async function getGithubData() {
 
   return pending;
 }
+
+await readDiskCache();
 
 const app = express();
 app.disable("x-powered-by");

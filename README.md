@@ -34,8 +34,10 @@ npm start           # sert dist/ + /api/github (PORT=8787 par défaut)
 
 ## Données GitHub
 
-Le serveur lit l’API GitHub côté serveur, met le résultat en cache 10 minutes, puis le front se
-rafraîchit toutes les 10 minutes quand l’onglet est visible.
+Le serveur lit l’API GitHub côté serveur, met le résultat en cache 10 minutes (15 minutes sans
+token), puis le front se rafraîchit toutes les 10 minutes quand l’onglet est visible. Le dernier
+état réussi est aussi écrit dans `.cache/github.json` : un redémarrage ne vide donc pas la page.
+Dans Docker, ce fichier vit dans le volume `app_cache`.
 
 - Les **dépôts** sont triés par dernière contribution de `lucafeine` (repli sur `pushed_at`).
 - Les **commits** viennent des dépôts publics, filtrés par auteur, puis fusionnés et triés par date.
@@ -45,9 +47,11 @@ rafraîchit toutes les 10 minutes quand l’onglet est visible.
   reconstruit une approximation à partir des commits publics.
 - L’**avatar** est chargé depuis `https://github.com/lucafeine.png?size=480` : GitHub renvoie
   toujours la photo actuelle, sans copie locale.
-- Sans token, GitHub limite à 60 requêtes/heure par IP. Avec un token en lecture seule, la limite
-  passe à 5 000 requêtes/heure. Créez un token fine-grained ici :
+- Sans token, GitHub limite à 60 requêtes/heure par IP. Le serveur réduit alors le nombre de
+  dépôts analysés et allonge le cache ; avec un token en lecture seule, la limite passe à
+  5 000 requêtes/heure. Créez un token fine-grained ici :
   <https://github.com/settings/tokens?type=beta>, puis renseignez `GITHUB_TOKEN` dans `.env`.
+  En production, le token est fortement recommandé.
 
 Si GitHub est momentanément indisponible, le serveur ressert le dernier cache. Sans cache, les
 sections concernées affichent un message et un lien direct vers GitHub ; la photo et les liens
@@ -88,7 +92,7 @@ Arrêt : `docker compose down`. Les volumes `caddy_data` et `caddy_config` conse
 | --- | --- | --- |
 | `GITHUB_USER` | `lucafeine` | Compte GitHub lu par l’API |
 | `GITHUB_TOKEN` | vide | Token en lecture seule, recommandé en production |
-| `CACHE_TTL_MS` | `600000` | Durée du cache serveur (10 min) |
+| `CACHE_TTL_MS` | `600000` avec token, `900000` sans | Durée du cache serveur |
 | `PORT` | `8787` en local, `3000` dans Docker | Port HTTP interne |
 
 ## Accessibilité

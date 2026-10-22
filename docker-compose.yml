@@ -13,6 +13,8 @@ services:
       CACHE_TTL_MS: ${CACHE_TTL_MS:-600000}
     expose:
       - "3000"
+    volumes:
+      - app_cache:/app/.cache
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
@@ -46,5 +48,6 @@ services:
         max-file: "3"
 
 volumes:
+  app_cache:
   caddy_data:
   caddy_config:

@@ -5,6 +5,7 @@ node_modules/
 dist/
 .vite/
 *.tsbuildinfo
+.cache/
 
 # Secrets et configuration locale
 .env
