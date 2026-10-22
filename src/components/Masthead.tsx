@@ -1,15 +1,20 @@
 import { content } from "../content";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Masthead() {
   const year = new Date().getFullYear();
 
   return (
     <header className="masthead">
-      <p className="masthead__issue">
-        <span>Portfolio</span>
-        <span aria-hidden="true">·</span>
-        <span>{year}/{year+1}</span>
-      </p>
+      <div className="masthead__top">
+        <p className="masthead__issue">
+          <span>Portfolio</span>
+          <span aria-hidden="true">·</span>
+          <span>{year}/{year + 1}</span>
+        </p>
+
+        <ThemeToggle />
+      </div>
 
       <a className="masthead__wordmark" href="#contenu">
         lucafeine<span className="masthead__dot" aria-hidden="true">.</span>

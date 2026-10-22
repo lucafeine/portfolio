@@ -7,6 +7,8 @@
  */
 
 :root {
+  color-scheme: light;
+
   /* Colour — tinted toward the warm paper hue (78), accent at coffee-roast 45 */
   --color-paper: oklch(95.5% 0.018 78);
   --color-paper-2: oklch(92.5% 0.02 78);
@@ -93,4 +95,29 @@
   --portrait-size: clamp(8.5rem, 22vw, 12.5rem);
   --contrib-cell: 0.6875rem;
   --contrib-gap: 0.1875rem;
+}
+
+/* Thème sombre — même famille chaude, papier retourné en espresso de nuit. */
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-paper: oklch(19% 0.014 62);
+  --color-paper-2: oklch(23.5% 0.016 62);
+  --color-paper-3: oklch(27.5% 0.016 62);
+  --color-ink: oklch(92% 0.013 80);
+  --color-ink-2: oklch(80% 0.014 78);
+  --color-muted: oklch(68% 0.015 72);
+  --color-rule: oklch(34% 0.018 62);
+  --color-rule-2: oklch(28% 0.016 62);
+  --color-accent: oklch(78% 0.1 65);
+  --color-accent-strong: oklch(85% 0.085 72);
+  --color-focus: oklch(82% 0.14 72);
+  --color-accent-ink: oklch(19% 0.014 62);
+  --color-selection: oklch(36% 0.05 62);
+  --color-contrib-0: oklch(26% 0.012 62);
+  --color-contrib-1: oklch(36% 0.04 62);
+  --color-contrib-2: oklch(48% 0.07 58);
+  --color-contrib-3: oklch(62% 0.1 55);
+  --color-contrib-4: oklch(76% 0.12 62);
 }

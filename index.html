@@ -10,8 +10,36 @@
     />
     <meta name="author" content="lucafeine" />
     <meta name="robots" content="index, follow" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f7efe3" />
+    <script>
+      // Pose le thème avant le premier rendu pour éviter tout flash clair/sombre.
+      // Trois modes : "light", "dark", "system" (défaut).
+      (function () {
+        try {
+          var stored = localStorage.getItem("lucafeine-theme");
+          var mode =
+            stored === "light" || stored === "dark" || stored === "system"
+              ? stored
+              : "system";
+          var dark =
+            mode === "dark" ||
+            (mode === "system" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+          document.documentElement.dataset.themeMode = mode;
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+        } catch (error) {
+          var prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          document.documentElement.dataset.themeMode = "system";
+          document.documentElement.dataset.theme = prefersDark
+            ? "dark"
+            : "light";
+        }
+      })();
+    </script>
 
     <link rel="canonical" href="https://lucafeine.fr/" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
