@@ -28,23 +28,11 @@ export function Intro() {
             />
           )}
         </div>
-        <figcaption>
-          Photo de profil lue depuis{" "}
-          <a href={content.githubUrl} target="_blank" rel="noopener noreferrer">
-            GitHub
-            <span className="sr-only"> (nouvel onglet)</span>
-          </a>
-          .
-        </figcaption>
       </figure>
 
       <div className="intro__prose">
         <h1 id="intro-title">{content.headline}</h1>
         <p className="intro__lede">{content.intro}</p>
-        <p className="intro__note">
-          Ce site lit l’API GitHub à chaque visite. Les dépôts et les commits affichés ici suivent
-          donc le dépôt, pas une capture d’écran.
-        </p>
       </div>
     </section>
   );

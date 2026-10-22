@@ -41,7 +41,7 @@
   --text-2xl: 2.4414rem;
   --text-3xl: 3.0518rem;
   --text-4xl: 3.8147rem;
-  --text-display: clamp(2.5rem, 1.5rem + 4vw, 4.75rem);
+  --text-display: clamp(2rem, 1.1rem + 2.8vw, 3.25rem);
   --text-display-s: clamp(2rem, 1.25rem + 3vw, 3.5rem);
 
   --leading-tight: 1.08;
